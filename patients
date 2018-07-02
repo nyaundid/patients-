@@ -1,0 +1,406 @@
+# coding: utf-8
+
+# In[3]:
+
+
+import matplotlib as plt
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import scale
+import pandas as pd
+from pylab import rcParams
+import seaborn as sb
+from collections import Counter
+import statsmodels.formula.api as smapi
+import matplotlib.pyplot as plt
+from statsmodels.formula.api import ols
+import statsmodels.api as sm
+from sklearn import preprocessing
+import matplotlib as plt
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import scale
+import pandas as pd
+from pylab import rcParams
+import seaborn as sb
+from collections import Counter
+import statsmodels.formula.api as smapi
+import matplotlib.pyplot as plt
+from statsmodels.formula.api import ols
+import statsmodels.api as sm
+from sklearn import preprocessing
+
+
+
+# In[4]:
+
+
+dataset = "Documents\\patients.csv"
+patients = pd.read_csv(dataset)
+dataset = np.genfromtxt("Documents\\patients.csv", delimiter = ',')
+
+
+# In[5]:
+
+
+patients.head()
+
+
+# In[6]:
+
+
+patients.shape
+
+
+# In[7]:
+
+
+patients.loc[:, ['Age', 'Gender', 'Height', 'Weight', 'Smoker', 'Location', 'SelfAssessedHealthStatus']]
+
+
+# In[8]:
+
+
+sb.pairplot(patients)
+
+
+# In[9]:
+
+
+df = pd.read_csv("Documents\\patients.csv",sep=",")
+
+
+# In[10]:
+
+
+lm = smapi.ols(formula = "Systolic~Age+Gender+Height+Weight+Smoker+Location+SelfAssessedHealthStatus", data=df).fit()
+lm.summary()
+
+
+# In[11]:
+
+
+fig, ax = plt.subplots(figsize=(12,7))
+fig = sm.graphics.influence_plot(lm, ax=ax, criterion="cooks")
+
+
+# In[12]:
+
+
+GenderD = pd.get_dummies(df["Gender"])
+
+
+# In[13]:
+
+
+GenderD
+
+
+# In[14]:
+
+
+LocationD = pd.get_dummies(df["Location"])
+
+
+# In[15]:
+
+
+LocationD
+
+
+# In[16]:
+
+
+SelfAssessedHealthStatusD = pd.get_dummies(df["SelfAssessedHealthStatus"])
+
+
+# In[17]:
+
+
+SelfAssessedHealthStatusD 
+
+
+# In[18]:
+
+
+from sklearn import preprocessing
+import numpy as np
+
+
+# In[19]:
+
+
+X_train = patients.loc[:, ['Age',  'Height', 'Weight']]
+
+
+# In[20]:
+
+
+
+X_train
+
+
+
+# In[21]:
+
+
+X_scaled = preprocessing.scale(X_train)
+
+
+# In[22]:
+
+
+print(X_scaled, '\n')
+print(X_scaled.mean(axis=0), X_scaled.std(axis=0))
+
+
+# In[23]:
+
+
+from scipy.stats import zscore
+nz = X_train.apply(zscore)
+
+
+# In[24]:
+
+
+nz
+
+
+# In[25]:
+
+
+X1 = pd.concat([nz,GenderD.ix[:,0],LocationD.ix[:,[0,1]],SelfAssessedHealthStatusD.ix[:,[0,1,2]]],axis=1)
+
+
+# In[26]:
+
+
+X1
+
+
+# In[27]:
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import linear_model
+from sklearn.linear_model import lasso_path, lars_path, Lasso, enet_path
+
+
+# In[28]:
+
+
+Yt = X_train = patients.loc[:, ['Systolic']]
+
+
+# In[29]:
+
+
+Yt
+
+
+# In[30]:
+
+
+Y_scaled = preprocessing.scale(Yt)
+
+
+# In[31]:
+
+
+print(Y_scaled, '\n')
+print(Y_scaled.mean(axis=0), Y_scaled.std(axis=0))
+
+
+# In[32]:
+
+
+from scipy.stats import zscore
+Yz =Yt.apply(zscore)
+
+
+# In[33]:
+
+
+Yz
+
+
+# In[34]:
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import linear_model
+from sklearn.linear_model import lasso_path, lars_path, Lasso, enet_path
+
+
+# In[35]:
+
+
+X = X1
+Y = Yz
+
+X[np.isnan(X)] = 0 
+
+
+# In[36]:
+
+
+Y = dataset[:,1];
+X = dataset[:,0:13];  
+X[np.isnan(X)] = 0 
+
+
+# In[ ]:
+
+
+
+
+
+# In[37]:
+
+
+print("Regularization path using lars_path")    
+
+
+# In[38]:
+
+
+alphas1, active1, coefs1= lars_path(X, Y, method='lasso', verbose=True)
+
+
+# In[39]:
+
+
+print("Regularization path using lars_path")  
+
+
+# In[40]:
+
+
+eps= 5e-6
+
+
+# In[41]:
+
+
+alphas2, coefs2, _= lasso_path(X, Y, eps)      
+
+
+# In[42]:
+
+
+print("ONE regularization using Lasso")
+  
+
+
+# In[43]:
+
+
+clf = Lasso(fit_intercept=False, alpha=1.3128)
+
+
+# In[44]:
+
+
+clf.fit(X, Y)
+
+
+# In[45]:
+
+
+print(clf.intercept_, clf.coef_)
+
+
+# In[46]:
+
+
+clf.fit(X, Y)
+print(clf.intercept_, clf.coef_)
+
+
+# In[47]:
+
+
+fig, ax = plt.subplots(figsize=(30,25))
+xx = np.sum(np.abs(coefs1.T), axis=1)
+plt.plot(xx, coefs1.T)
+ymin, ymax = plt.ylim()
+plt.vlines(xx, ymin, ymax, linestyle='dashed',  label='alpha CV')
+plt.xlabel('|coef| / max|coef|')
+plt.ylabel('Coefficients')
+plt.title('LARS Path')
+
+plt.legend()
+
+
+
+
+# In[48]:
+
+
+xx
+
+
+# In[49]:
+
+
+print("Computing regularization path using the LARS ...")
+alphas, _, coefs = linear_model.lars_path(X, Y, method='lasso', verbose=True)
+
+xx = np.sum(np.abs(coefs.T), axis=1)
+xx /= xx[-1]
+
+plt.plot(xx, coefs.T)
+ymin, ymax = plt.ylim()
+plt.vlines(xx, ymin, ymax, linestyle='dashed')
+plt.xlabel('|coef| / max|coef|')
+plt.ylabel('Coefficients')
+plt.title('LASSO Path')
+plt.axis('tight')
+plt.show()
+
+
+# In[50]:
+
+
+from sklearn.linear_model import Lasso
+for aa in np.arange(0.0000001, 1.1, 0.1):
+    clf = Lasso(alpha = aa)
+    clf.fit(X1, Yz)
+    print(aa, clf.coef_, clf.intercept_)
+
+
+# In[51]:
+
+
+
+from sklearn.model_selection import cross_val_score
+
+
+from sklearn.cross_validation import cross_val_score
+
+
+
+clf = linear_model.Lasso()
+scores = cross_val_score(clf, X, Y, cv=10)
+
+
+# In[52]:
+
+
+scores
+
+
+# In[53]:
+
+
+scores.mean()
+
+
+# In[54]:
+
+
+scores.std()
+
